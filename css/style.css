@@ -1,0 +1,139 @@
+/* Fuente para los títulos principales */
+@font-face {
+    font-family: 'Alexio';
+    src: url('../fonts/Alexio.ttf');
+}
+
+/* Fuente decorativa para subtítulos */
+@font-face {
+    font-family: 'GourmetLeFrench';
+    src: url('../fonts/GourmetLeFrench.ttf');
+}
+
+body {
+    font-family: 'Commissioner', sans-serif;
+    background-color: #f4f1ea; /* Un color crema suave como el papel */
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* El contenedor blanco principal */
+.container {
+    background: white;
+    max-width: 400px;
+    width: 100%;
+    padding: 30px;
+    border-radius: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border-top: 8px solid #18405c; /* Tu azul principal */
+    text-align: center;
+}
+
+.main-logo {
+    max-width: 150px;
+    margin-bottom: 10px;
+}
+
+.brand-title {
+    font-family: 'Alexio', sans-serif;
+    color: #18405c;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.brand-subtitle {
+    font-family: 'GourmetLeFrench', cursive;
+    font-size: 1.2rem;
+    color: #8d6e63;
+    margin-top: -5px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #d7ccc8;
+    border-radius: 10px;
+    box-sizing: border-box; /* Evita que el cuadro se salga del borde */
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s; /* Para que el cambio de color sea suave */
+}
+
+/* Grupo de botones que van uno al lado del otro */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-nuevo {
+    background-color: #18405c;
+    color: white;
+}
+
+.btn-buscar {
+    background-color: #5d7a8c;
+    color: white;
+}
+
+.btn-limpiar {
+    background-color: #d7ccc8;
+    color: #3e2723;
+    margin-top: 5px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px dashed #18405c; /* Borde punteado azul */
+    margin-top: 20px;
+}
+
+#displayNombre {
+    font-family: 'Alexio', sans-serif !important;
+    font-size: 1.8rem;
+    color: #18405c;
+    text-transform: uppercase;
+    display: block;
+    margin: 10px 0;
+}
+
+.puntos-display {
+    font-size: 5rem;
+    font-weight: 700;
+    color: #18405c;
+}
+
+/* El cuadrito gris donde sale el QR */
+.qr-card {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+#reader {
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+}
+
+/* Botón de canjear cuando el cliente no tiene 10 puntos aún */
+.btn-accion-off {
+    background-color: #e0e0e0 !important;
+    color: #9e9e9e !important;
+    pointer-events: none; /* No deja hacer clic */
+}
