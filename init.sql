@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    celular VARCHAR(20),
+    correo VARCHAR(100),
+    puntos INTEGER DEFAULT 0,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
