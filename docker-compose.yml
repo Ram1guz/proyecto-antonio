@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ramiro
+      POSTGRES_PASSWORD: tu_password_seguro
+      POSTGRES_DB: jacaqu_rewards
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DB_USER: ramiro
+      DB_PASSWORD: tu_password_seguro
+      DB_HOST: db
+      DB_NAME: jacaqu_rewards
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
