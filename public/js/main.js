@@ -1,4 +1,23 @@
- let clienteActual = null;
+ // Función para cambiar entre las vistas de Registro, Cliente y Barista
+function showView(viewId) {
+    const views = ['view-register', 'view-client', 'view-barista'];
+    
+    views.forEach(id => {
+        const view = document.getElementById(id);
+        if (view) {
+            if (id === viewId) {
+                view.classList.remove('hidden');
+            } else {
+                view.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// Mensaje de consola para saber que cargó bien
+console.log("Sistema de Jacaqu Café Rewards cargado correctamente.");
+
+let clienteActual = null;
 let html5QrCode = null;
 
 // --- 1. REGISTRAR ---

@@ -5,175 +5,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jacaqu Café - Rewards</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --azul-jacaqu: #18405c;
-            --dorado: #d4af37;
-        }
-
-        body {
-            font-family: 'Commissioner', sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        /* Contenedor con sombra armonizada */
-        .contenedor-central {
-            width: 90%;
-            max-width: 360px;
-            background-color: #ffffff;
-            border-radius: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            padding: 25px 15px;
-            text-align: center;
-        }
-
-        /* LOGO GRANDE */
-        .header-marca {
-            margin-bottom: 20px;
-        }
-
-        .logo-principal {
-            width: 120px; /* Tamaño aumentado del logo */
-            height: auto;
-            margin-bottom: 5px;
-        }
-
-        .titulo-app {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--azul-jacaqu);
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin: 0;
-        }
-
-        /* BLOQUE CLIENTE COMPACTO */
-        .seccion-qr {
-            margin: 15px 0;
-        }
-
-        .nombre-cliente {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--azul-jacaqu);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        #codigo-qr {
-            display: inline-block;
-            margin: 5px 0;
-        }
-
-        .puntos-contenedor {
-            margin-top: 5px;
-        }
-
-        .puntos-valor {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--azul-jacaqu);
-            display: block;
-            line-height: 1;
-        }
-
-        .puntos-sub {
-            font-size: 0.65rem;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* NOVEDADES MINIMALISTA */
-        .banner-novedades {
-            background-color: #f9f9f9;
-            border-radius: 15px;
-            padding: 8px 15px;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #eee;
-        }
-
-        .novedades-txt {
-            text-align: left;
-        }
-
-        .novedades-txt h4 {
-            margin: 0;
-            font-size: 0.7rem;
-            color: var(--azul-jacaqu);
-        }
-
-        .novedades-txt p {
-            margin: 0;
-            font-size: 0.65rem;
-            color: #888;
-        }
-    </style>
+    <title>Jacaqu Café Rewards</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-    <div class="contenedor-central">
-        <div class="header-marca">
-            <img src="logo.png" alt="Logo Jacaqu Café" class="logo-principal">
-            <h2 class="titulo-app">Café Rewards</h2>
-        </div>
+    <div class="app-container">
+        <header>
+            <img src="./logo.png" alt="Jacaqu Café Logo" class="logo">
+            <h1 class="brand-name">Café Rewards</h1>
+            <p>Jacaqu Café - Programa de Fidelidad</p>
+        </header>
 
-        <div class="seccion-qr">
-            <div class="nombre-cliente" id="nombre-display">ANTONIO GARCÍA</div>
+        <section id="view-register" class="card">
+            <h2>Gestión de Cliente</h2>
+            <form id="form-registro">
+                <input type="text" id="nombre" placeholder="Nombre" required>
+                <input type="text" id="apellido" placeholder="Apellido" required>
+                <input type="tel" id="celular" placeholder="Celular" required>
+                <input type="email" id="correo" placeholder="Correo Electrónico">
+                <input type="date" id="fecha_nacimiento" title="Fecha de Nacimiento" required>
+
+                <div class="button-row">
+                    <button type="submit" class="btn-registrar">🆕 Registrar</button>
+                    <button type="button" class="btn-buscar" onclick="showView('view-barista')">🔍 Buscar</button>
+                </div>
+                <button type="reset" class="btn-limpiar">✔️ Siguiente Cliente / Limpiar</button>
+            </form>
+        </section>
+
+        <section id="view-client" class="points-section">
+            <h3>Puntos Acumulados</h3>
+            <div class="points-number" id="current-points">0</div>
+            <p>¡Faltan 10 cafés para tu premio!</p>
             
-            <div id="codigo-qr"></div>
-
-            <div class="puntos-contenedor">
-                <span class="puntos-valor" id="puntos-display">150</span>
-                <span class="puntos-sub">Puntos Acumulados</span>
+            <div id="qrcode" class="qr-placeholder">
+                <small>El QR aparecerá aquí al registrar</small>
             </div>
-        </div>
+        </section>
 
-        <div class="banner-novedades">
-            <div style="font-size: 1rem; margin-right: 10px;">☕</div>
-            <div class="novedades-txt">
-                <h4>Novedad de la Semana</h4>
-                <p>Prueba nuestro nuevo blend brasileño.</p>
-            </div>
-        </div>
+        <footer>
+            <button class="btn-ghost" onclick="showView('view-barista')">Acceso Staff</button>
+        </footer>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <script>
-        window.onload = function() {
-            const cliente = {
-                nombre: "ANTONIO",
-                apellido: "GARCÍA",
-                puntos: 150,
-                id: "700112233"
-            };
-
-            document.getElementById("nombre-display").innerText = `${cliente.nombre} ${cliente.apellido}`;
-            document.getElementById("puntos-display").innerText = cliente.puntos;
-
-            new QRCode(document.getElementById("codigo-qr"), {
-                text: cliente.id,
-                width: 150, // QR un poco más pequeño para armonizar
-                height: 150,
-                colorDark : "#18405c",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        };
-    </script>
+    <script src="./js/main.js" defer></script>
 </body>
 </html>
