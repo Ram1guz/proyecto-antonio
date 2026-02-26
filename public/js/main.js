@@ -1,145 +1,80 @@
- // Función para cambiar entre las vistas de Registro, Cliente y Barista
+ /// --- PROYECTO ANTONIO: LÓGICA DE CAFÉ REWARDS ---
+
+// 1. Función para cambiar entre vistas
 function showView(viewId) {
+    console.log("Cambiando a la vista:", viewId);
     const views = ['view-register', 'view-client', 'view-barista'];
     
     views.forEach(id => {
-        const view = document.getElementById(id);
-        if (view) {
+        const el = document.getElementById(id);
+        if (el) {
             if (id === viewId) {
-                view.classList.remove('hidden');
+                el.classList.remove('hidden');
             } else {
-                view.classList.add('hidden');
+                el.classList.add('hidden');
             }
         }
     });
 }
 
-// Mensaje de consola para saber que cargó bien
-console.log("Sistema de Jacaqu Café Rewards cargado correctamente.");
+// 2. Esperar a que el DOM esté cargado
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 Sistema Jacaqu Café cargado correctamente.");
 
-let clienteActual = null;
-let html5QrCode = null;
+    const formRegistro = document.getElementById('form-registro');
 
-// --- 1. REGISTRAR ---
-document.getElementById('form-cliente').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nom = document.getElementById("nombre").value.trim();
-    const ape = document.getElementById("apellido").value.trim();
-    
-    clienteActual = {
-        nombre: nom,
-        apellido: ape,
-        celular: document.getElementById("celular").value,
-        correo: document.getElementById("correo").value,
-        puntos: 0
-    };
+    if (formRegistro) {
+        formRegistro.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("📡 Enviando datos al servidor...");
 
-    guardarEnLocalStorage();
-    actualizarInterfaz();
-    alert("✅ Cliente registrado");
-    this.reset();
-});
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                apellido: document.getElementById('apellido').value,
+                celular: document.getElementById('celular').value,
+                correo: document.getElementById('correo').value,
+                fecha_nacimiento: document.getElementById('fecha_nacimiento').value
+            };
 
-// --- 2. BUSCAR MANUAL ---
-window.buscarCliente = function() {
-    const nom = document.getElementById("nombre").value.trim();
-    const ape = document.getElementById("apellido").value.trim();
-    const llave = (nom + ape).toLowerCase().replace(/\s+/g, '');
-    
-    const datos = localStorage.getItem(llave);
-    if (datos) {
-        clienteActual = JSON.parse(datos);
-        actualizarInterfaz();
-    } else {
-        alert("❌ Cliente no encontrado");
-    }
-};
+            try {
+                // Usamos la ruta relativa si el HTML se sirve desde el mismo servidor
+                // o la IP fija 127.0.0.1 para evitar bloqueos
+                const respuesta = await fetch('http://127.0.0.1:3000/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
 
-// --- 3. LÓGICA QR (GENERAR Y ESCANEAR) ---
+                if (!respuesta.ok) {
+                    const errorData = await respuesta.json();
+                    throw new Error(errorData.error || 'Error en el servidor');
+                }
 
-window.activarEscaner = function() {
-    document.getElementById("reader-container").style.display = "block";
-    html5QrCode = new Html5Qrcode("reader");
-    
-    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-    
-    html5QrCode.start(
-        { facingMode: "user" }, 
-        config,
-        (decodedText) => { // Éxito
-            const datos = localStorage.getItem(decodedText);
-            if (datos) {
-                clienteActual = JSON.parse(datos);
-                actualizarInterfaz();
-                detenerEscaner();
-                alert("✅ Cliente cargado");
-            } else {
-                alert("QR no reconocido");
+                const resultado = await respuesta.json();
+                
+                if (resultado.success) {
+                    console.log("✅ Servidor respondió: Éxito");
+                    alert('✅ ¡Registro exitoso en Café Rewards!');
+                    formRegistro.reset();
+                    
+                    // Aquí puedes disparar la vista de puntos si quieres
+                    // showView('view-client'); 
+                }
+            } catch (error) {
+                console.error("❌ Error en la petición:", error);
+                alert('⚠️ No se pudo conectar con el servidor Jacaqu. Asegúrate de que Node.js esté corriendo.');
             }
-        }
-    ).catch(err => alert("Error al abrir cámara: " + err));
-};
-
-window.detenerEscaner = function() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById("reader-container").style.display = "none";
         });
     }
-};
 
-// --- 4. ACTUALIZAR INTERFAZ ---
-function actualizarInterfaz() {
-    const contenedor = document.getElementById("lista-clientes-container");
-    if (!clienteActual) return;
-
-    const llave = (clienteActual.nombre + clienteActual.apellido).toLowerCase().replace(/\s+/g, '');
-    const urlQR = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${llave}`;
-
-    contenedor.innerHTML = `
-        <div class="card">
-            <span id="displayNombre">${clienteActual.nombre} ${clienteActual.apellido}</span>
-            <div class="puntos-display">${clienteActual.puntos}</div>
-            <p>CAFÉS ACUMULADOS</p>
-            
-            <div class="button-group">
-                <button onclick="sumarPunto()" class="btn-nuevo">➕ Sumar</button>
-                <button onclick="canjear()" class="${clienteActual.puntos >= 10 ? 'btn-buscar' : 'btn-accion-off'}">🎁 Canjear</button>
-            </div>
-
-            <div class="qr-card">
-                <img src="${urlQR}" alt="QR Cliente">
-                <p style="font-size: 0.7rem; color: #666;">ID: ${llave}</p>
-            </div>
-        </div>
-    `;
-}
-
-// --- 5. FUNCIONES DE APOYO ---
-window.sumarPunto = function() {
-    if (clienteActual && clienteActual.puntos < 10) {
-        clienteActual.puntos++;
-        guardarEnLocalStorage();
-        actualizarInterfaz();
+    // 4. Lógica para el botón "Limpiar / Siguiente"
+    const btnLimpiar = document.querySelector('.btn-limpiar');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', () => {
+            if(formRegistro) formRegistro.reset();
+            const displayPuntos = document.getElementById('current-points');
+            if (displayPuntos) displayPuntos.innerText = "0";
+            console.log("🧹 Formulario limpio.");
+        });
     }
-};
-
-window.canjear = function() {
-    if (clienteActual.puntos >= 10) {
-        clienteActual.puntos = 0;
-        guardarEnLocalStorage();
-        actualizarInterfaz();
-        alert("✨ ¡Premio entregado!");
-    }
-};
-
-window.limpiarPantalla = function() {
-    clienteActual = null;
-    document.getElementById("form-cliente").reset();
-    document.getElementById("lista-clientes-container").innerHTML = "";
-};
-
-function guardarEnLocalStorage() {
-    const llave = (clienteActual.nombre + clienteActual.apellido).toLowerCase().replace(/\s+/g, '');
-    localStorage.setItem(llave, JSON.stringify(clienteActual));
-}
+});
