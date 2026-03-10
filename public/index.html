@@ -1,50 +1,73 @@
- 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jacaqu Café Rewards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="./css/style.css">
-    </head>
+    <style>
+        .brand-name { font-family: 'Parisienne', cursive; color: #18405c; font-size: 2.5rem; }
+        .cliente-info-display { color: #18405c; font-weight: bold; font-size: 1.2rem; margin-top: 10px; min-height: 1.5rem; }
+        .app-container { max-width: 500px; margin: 0 auto; padding: 20px; text-align: center; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .button-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        button { cursor: pointer; padding: 10px; border-radius: 5px; border: none; width: 100%; }
+        .btn-registrar { background-color: #18405c; color: white; }
+        .btn-buscar { background-color: #2c6e91; color: white; }
+        .btn-limpiar { background-color: #666; color: white; margin-top: 10px; }
+    </style>
+</head>
 <body>
 
     <div class="app-container">
         <header>
-            <img src="./logo.png" alt="Jacaqu Café Logo" class="logo">
+            <img src="./logo.png" alt="Jacaqu Café Logo" class="logo" style="max-width: 150px;">
             <h1 class="brand-name">Café Rewards</h1>
-            <p>Jacaqu Café - Programa de Fidelidad</p>
+            <p>Programa de Fidelidad</p>
         </header>
 
         <section id="view-register" class="card">
             <h2>Gestión de Cliente</h2>
             <form id="form-registro">
-                <input type="text" id="nombre" placeholder="Nombre" required>
-                <input type="text" id="apellido" placeholder="Apellido" required>
-                <input type="tel" id="celular" placeholder="Celular" required>
-                <input type="email" id="correo" placeholder="Correo Electrónico">
-                <input type="date" id="fecha_nacimiento" title="Fecha de Nacimiento" required>
+    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+    <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
+    <input type="tel" id="celular" name="celular" placeholder="Celular (Obligatorio)" required>
+    <input type="email" id="correo" name="correo" placeholder="Correo Electrónico (Obligatorio)" required>
+    
+    <div style="text-align: left; margin: 10px 0;">
+        <label style="color: #18405c; font-weight: bold; font-size: 0.9rem;">Fecha de Nacimiento:</label>
+        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+    </div>
 
-                <div class="button-row">
-                    <button type="submit" class="btn-registrar">🆕 Registrar</button>
-                    <button type="button" class="btn-buscar" onclick="showView('view-barista')">🔍 Buscar</button>
-                </div>
-                <button type="reset" class="btn-limpiar">✔️ Siguiente Cliente / Limpiar</button>
-            </form>
+    <div class="button-row">
+        <button type="submit" class="btn-registrar">🆕 Registrar</button>
+        <button type="button" class="btn-buscar" id="btn-buscar">🔍 Buscar por Nombre</button>
+    </div>
+    
+    <button type="button" class="btn-limpiar" id="btn-limpiar">✔️ Siguiente Cliente / Limpiar</button>
+</form>
         </section>
 
-        <section id="view-client" class="points-section">
-            <h3>Puntos Acumulados</h3>
-            <div class="points-number" id="current-points">0</div>
-            <p>¡Faltan 10 cafés para tu premio!</p>
+        <section id="view-client" class="card points-section">
+            <h3>Estado del Cliente</h3>
+            <div id="display-nombre-cliente" class="cliente-info-display">Esperando selección...</div>
             
-            <div id="qrcode" class="qr-placeholder">
-                <small>El QR aparecerá aquí al registrar</small>
-            </div>
+            <div class="points-number" id="current-points" style="font-size: 3rem; color: #18405c;">0</div>
+            <p id="mensaje-puntos">Puntos acumulados</p>
+            
+            <div id="qrcode" style="margin: 20px auto; display: flex; justify-content: center; min-height: 128px;">
+                </div>
+
+            <button type="button" id="btn-add-point" class="btn-registrar" style="display:none;">
+                + Sumar Café (Punto)
+            </button>
         </section>
 
         <footer>
-            <button class="btn-ghost" onclick="showView('view-barista')">Acceso Staff</button>
+            <button class="btn-ghost" onclick="alert('Área restringida')">Acceso Staff</button>
         </footer>
     </div>
 

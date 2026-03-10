@@ -1,80 +1,135 @@
- /// --- PROYECTO ANTONIO: LÓGICA DE CAFÉ REWARDS ---
+let clienteActual = null;
 
-// 1. Función para cambiar entre vistas
-function showView(viewId) {
-    console.log("Cambiando a la vista:", viewId);
-    const views = ['view-register', 'view-client', 'view-barista'];
-    
-    views.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            if (id === viewId) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
+// ==========================================
+// 1. REGISTRAR (Ahora guarda en la DB Real)
+// ==========================================
+document.getElementById('form-registro').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const datos = {
+    nombre: document.getElementById('nombre').value.trim(),
+    apellido: document.getElementById('apellido').value.trim(),
+    celular: document.getElementById('celular').value.trim(),
+    correo: document.getElementById('correo').value.trim(),
+    fecha_nacimiento: document.getElementById('fecha_nacimiento').value // <-- Nuevo!
+};
+
+    try {
+        const respuesta = await fetch('/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (respuesta.ok) {
+            const clienteGuardado = await respuesta.json();
+            alert(`✅ ¡${clienteGuardado.nombre} registrado en la base de datos!`);
+            seleccionarCliente(clienteGuardado);
+        } else {
+            alert("❌ Error al registrar. Quizás el correo ya existe.");
         }
+    } catch (err) {
+        console.error("Error de conexión:", err);
+        alert("🔌 No se pudo conectar con el servidor.");
+    }
+});
+
+// ==========================================
+// 2. BUSCAR (Busca en PostgreSQL)
+// ==========================================
+// Vinculamos el botón de buscar manualmente ya que quitamos el onclick del HTML
+document.getElementById('btn-buscar').addEventListener('click', async () => {
+    const nombre = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+
+    if (!nombre || !apellido) {
+        alert("Ingresa nombre y apellido para buscar.");
+        return;
+    }
+
+    try {
+        const respuesta = await fetch(`/buscar?nombre=${nombre}&apellido=${apellido}`);
+        if (respuesta.ok) {
+            const cliente = await respuesta.json();
+            seleccionarCliente(cliente);
+        } else {
+            mostrarError("❌ Cliente no encontrado en Jacaqu Café.");
+        }
+    } catch (err) {
+        mostrarError("🔌 Error de conexión al buscar.");
+    }
+});
+
+// ==========================================
+// 3. SUMAR PUNTO (Actualiza la DB)
+// ==========================================
+document.getElementById('btn-add-point').addEventListener('click', async () => {
+    if (!clienteActual) return;
+
+    try {
+        const respuesta = await fetch('/sumar-punto', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: clienteActual.id })
+        });
+
+        if (respuesta.ok) {
+            const datosActualizados = await respuesta.json();
+            clienteActual.puntos = datosActualizados.puntos;
+            document.getElementById('current-points').innerText = clienteActual.puntos;
+            
+            // Feedback visual
+            const display = document.getElementById('display-nombre-cliente');
+            display.innerText = `¡Punto añadido! Total: ${clienteActual.puntos}`;
+            setTimeout(() => {
+                display.innerText = `Cliente: ${clienteActual.nombre} ${clienteActual.apellido}`;
+            }, 2000);
+        }
+    } catch (err) {
+        alert("Error al sumar punto.");
+    }
+});
+
+// ==========================================
+// 4. FUNCIONES DE INTERFAZ (Se mantienen igual)
+// ==========================================
+function seleccionarCliente(cliente) {
+    clienteActual = cliente;
+    document.getElementById('display-nombre-cliente').innerText = `Cliente: ${cliente.nombre} ${cliente.apellido}`;
+    document.getElementById('display-nombre-cliente').style.color = "#18405c";
+    document.getElementById('current-points').innerText = cliente.puntos;
+    document.getElementById('btn-add-point').style.display = 'block';
+    generarQR(cliente.id.toString(), `${cliente.nombre} ${cliente.apellido}`);
+}
+
+function generarQR(id, nombre) {
+    const contenedorQR = document.getElementById('qrcode');
+    contenedorQR.innerHTML = ""; 
+    const qrDiv = document.createElement("div");
+    contenedorQR.appendChild(qrDiv);
+    
+    new QRCode(qrDiv, {
+        text: id, // El QR ahora contiene el ID real de la base de datos
+        width: 150,
+        height: 150,
+        colorDark : "#18405c"
     });
 }
 
-// 2. Esperar a que el DOM esté cargado
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Sistema Jacaqu Café cargado correctamente.");
-
-    const formRegistro = document.getElementById('form-registro');
-
-    if (formRegistro) {
-        formRegistro.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log("📡 Enviando datos al servidor...");
-
-            const datos = {
-                nombre: document.getElementById('nombre').value,
-                apellido: document.getElementById('apellido').value,
-                celular: document.getElementById('celular').value,
-                correo: document.getElementById('correo').value,
-                fecha_nacimiento: document.getElementById('fecha_nacimiento').value
-            };
-
-            try {
-                // Usamos la ruta relativa si el HTML se sirve desde el mismo servidor
-                // o la IP fija 127.0.0.1 para evitar bloqueos
-                const respuesta = await fetch('http://127.0.0.1:3000/registrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-
-                if (!respuesta.ok) {
-                    const errorData = await respuesta.json();
-                    throw new Error(errorData.error || 'Error en el servidor');
-                }
-
-                const resultado = await respuesta.json();
-                
-                if (resultado.success) {
-                    console.log("✅ Servidor respondió: Éxito");
-                    alert('✅ ¡Registro exitoso en Café Rewards!');
-                    formRegistro.reset();
-                    
-                    // Aquí puedes disparar la vista de puntos si quieres
-                    // showView('view-client'); 
-                }
-            } catch (error) {
-                console.error("❌ Error en la petición:", error);
-                alert('⚠️ No se pudo conectar con el servidor Jacaqu. Asegúrate de que Node.js esté corriendo.');
-            }
-        });
-    }
-
-    // 4. Lógica para el botón "Limpiar / Siguiente"
-    const btnLimpiar = document.querySelector('.btn-limpiar');
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', () => {
-            if(formRegistro) formRegistro.reset();
-            const displayPuntos = document.getElementById('current-points');
-            if (displayPuntos) displayPuntos.innerText = "0";
-            console.log("🧹 Formulario limpio.");
-        });
-    }
+document.getElementById('btn-limpiar').addEventListener('click', () => {
+    clienteActual = null;
+    document.getElementById('form-registro').reset();
+    document.getElementById('display-nombre-cliente').innerText = "Esperando cliente...";
+    document.getElementById('current-points').innerText = "0";
+    document.getElementById('btn-add-point').style.display = 'none';
+    document.getElementById('qrcode').innerHTML = "";
 });
+
+function mostrarError(mensaje) {
+    clienteActual = null;
+    const display = document.getElementById('display-nombre-cliente');
+    display.innerText = mensaje;
+    display.style.color = "red";
+    document.getElementById('current-points').innerText = "0";
+    document.getElementById('btn-add-point').style.display = 'none';
+}

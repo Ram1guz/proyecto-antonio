@@ -1,15 +1,16 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
-const cors = require('cors'); // Agregamos esto para evitar errores de conexión
+const cors = require('cors');
+
 const app = express();
 
 // Middleware
-app.use(cors()); // Permitir conexiones de cualquier origen
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Evitar caché
+// Evitar caché para ver cambios en tiempo real
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     next();
@@ -18,77 +19,96 @@ app.use((req, res, next) => {
 // Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuración de PostgreSQL
+// ==========================================
+// CONFIGURACIÓN DE POSTGRESQL (Ajustada para Docker)
+// ==========================================
 const pool = new Pool({
-    user: 'ramiro',
-    host: '127.0.0.1', // Forzamos IP local
-    database: 'jacaqu_rewards',
-    password: '5262', 
+    user: process.env.DB_USER || 'ramiro',
+    host: process.env.DB_HOST || 'db', 
+    database: process.env.DB_NAME || 'jacaqu_rewards',
+    password: process.env.DB_PASSWORD || '5262', 
     port: 5432,
 });
 
-// Probar conexión a la DB al iniciar
 pool.connect((err, client, release) => {
     if (err) {
-        return console.error('❌ Error conectando a PostgreSQL:', err.stack);
+        return console.error('❌ Error conectando a PostgreSQL desde Node:', err.stack);
     }
-    console.log('🐘 Conectado a PostgreSQL exitosamente');
+    console.log('🐘 Conectado a PostgreSQL exitosamente desde el contenedor');
     release();
 });
 
-// Ruta principal
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ==========================================
+// API: Registrar Cliente (Coincide con main.js)
+// ==========================================
+app.post('/registro', async (req, res) => {
+    const { nombre, apellido, celular, correo, fecha_nacimiento } = req.body;
+
+    // 1. Validación de campos vacíos
+    if (!nombre || !apellido || !celular || !correo || !fecha_nacimiento) {
+        return res.status(400).json({ error: "Faltan datos obligatorios para el registro." });
+    }
+
+    try {
+        const query = `
+            INSERT INTO clientes (nombre, apellido, celular, correo, puntos, fecha_nacimiento)
+            VALUES ($1, $2, $3, $4, 0, $5) RETURNING *`;
+        
+        const values = [nombre, apellido, celular, correo, fecha_nacimiento];
+        const resultado = await pool.query(query, values);
+
+        res.status(201).json(resultado.rows[0]);
+    } catch (err) {
+        console.error("❌ Error en DB:", err.message);
+        
+        // 2. Validación de duplicados (Celular o Correo)
+        if (err.code === '23505') {
+            res.status(400).json({ error: "El celular o el correo ya están registrados en el sistema." });
+        } else {
+            res.status(500).json({ error: "Hubo un problema técnico al guardar. Intenta de nuevo." });
+        }
+    }
 });
 
-// API: Ver clientes
-app.get('/admin/clientes', async (req, res) => {
+// ==========================================
+// API: Buscar Cliente (Coincide con main.js)
+// ==========================================
+app.get('/buscar', async (req, res) => {
+    const { nombre, apellido } = req.query;
     try {
-        const resultado = await pool.query('SELECT * FROM clientes ORDER BY fecha_registro DESC');
-        res.json(resultado.rows);
+        const query = `
+            SELECT * FROM clientes 
+            WHERE LOWER(nombre) = LOWER($1) AND LOWER(apellido) = LOWER($2)
+            LIMIT 1
+        `;
+        const resultado = await pool.query(query, [nombre, apellido]);
+
+        if (resultado.rows.length > 0) {
+            res.json(resultado.rows[0]);
+        } else {
+            res.status(404).json({ message: "Cliente no encontrado" });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// API: Registrar Cliente
-app.post('/registrar', async (req, res) => {
-    const { nombre, apellido, celular, correo, fecha_nacimiento } = req.body;
-
+// ==========================================
+// API: Sumar Punto
+// ==========================================
+app.post('/sumar-punto', async (req, res) => {
+    const { id } = req.body;
     try {
-        // 1. Validar si ya existe
-        const existe = await pool.query('SELECT * FROM clientes WHERE celular = $1', [celular]);
-        if (existe.rows.length > 0) {
-            return res.status(400).json({ success: false, error: "Este celular ya está registrado." });
-        }
-
-        // 2. Insertar (con fecha_nacimiento que ya comprobamos que existe en la DB)
-        const query = `
-            INSERT INTO clientes (nombre, apellido, celular, correo, puntos, fecha_nacimiento)
-            VALUES ($1, $2, $3, $4, 0, $5) RETURNING *`;
-        
-        const values = [nombre, apellido, celular, correo, fecha_nacimiento || null];
-        const resultado = await pool.query(query, values);
-
-        console.log("✅ Cliente registrado:", resultado.rows[0].nombre);
-        res.status(201).json({ success: true, cliente: resultado.rows[0] });
-
+        const query = 'UPDATE clientes SET puntos = puntos + 1 WHERE id = $1 RETURNING *';
+        const resultado = await pool.query(query, [id]);
+        res.json({ success: true, puntos: resultado.rows[0].puntos });
     } catch (err) {
-        console.error("❌ Error en Registro:", err.message);
-        res.status(500).json({ success: false, error: "Error en la base de datos: " + err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Iniciar servidor con manejo de errores
+// Iniciar servidor - Escuchando en 0.0.0.0 para que Docker lo vea
 const PORT = 3000;
-const server = app.listen(PORT, '127.0.0.1', () => {
-    console.log(`🚀 Servidor real lanzado en: http://127.0.0.1:${PORT}`);
-});
-
-server.on('error', (e) => {
-    if (e.code === 'EADDRINUSE') {
-        console.error(`❌ El puerto ${PORT} está ocupado. CIERRA EL OTRO TERMINAL o usa 'killall -9 node'`);
-    } else {
-        console.error("❌ Error inesperado:", e);
-    }
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor Jacaqu Café listo en puerto ${PORT}`);
 });

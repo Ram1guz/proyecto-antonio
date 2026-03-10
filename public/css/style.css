@@ -1,131 +1,94 @@
-/* RESET GENERAL */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* Estilo para el contenedor del formulario */
+#form-registro {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    margin: 20px auto;
 }
 
-body {
-    background-color: #f5f1ea; /* Fondo crema suave */
-    font-family: 'Segoe UI', Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-}
-
-/* CONTENEDOR TIPO APP */
-.app-container {
-    background-color: white;
-    width: 100%;
-    max-width: 400px;
-    border-radius: 30px;
-    padding: 30px 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-/* LOGO Y CABECERA */
-.logo {
-    width: 100px;
-    margin-bottom: 10px;
-}
-
-.brand-name {
-    color: #18405c; /* El azul Jacaqu que nos gusta */
-    font-size: 26px;
-    font-weight: bold;
+/* Títulos y etiquetas */
+label {
+    display: block;
+    color: #18405c;
+    font-weight: 600;
     margin-bottom: 5px;
-}
-
-header p {
-    color: #888;
-    font-size: 13px;
-    margin-bottom: 25px;
-}
-
-/* FORMULARIO */
-.card h2 {
-    color: #5d4037;
-    font-size: 18px;
-    margin-bottom: 15px;
+    font-size: 0.9rem;
     text-align: left;
 }
 
+/* Inputs elegantes */
 input {
     width: 100%;
     padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 14px;
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box; /* Evita que el input se salga del contenedor */
 }
 
-/* BOTONES */
+input:focus {
+    outline: none;
+    border-color: #18405c;
+    background-color: #f0f4f8;
+}
+
+/* Fila de botones principales (Registrar y Buscar) */
 .button-row {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
 }
 
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.1s, background-color 0.3s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Colores específicos de botones */
 .btn-registrar {
     background-color: #18405c;
     color: white;
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
+    flex: 2; /* Más ancho */
+}
+
+.btn-registrar:hover {
+    background-color: #235a82;
 }
 
 .btn-buscar {
-    background-color: #728c9a;
-    color: white;
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
+    background-color: #f1f3f5;
+    color: #18405c;
+    border: 2px solid #18405c;
+    flex: 1; /* Más angosto */
 }
 
+/* Botón de limpiar / Siguiente (Ocupa todo el ancho) */
 .btn-limpiar {
-    background-color: #d7ccc8;
-    color: #5d4037;
+    background-color: #6c757d;
+    color: white;
     width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    cursor: pointer;
-}
-
-/* SECCIÓN DE PUNTOS */
-.points-section {
-    border: 2px dashed #18405c;
-    border-radius: 20px;
-    padding: 20px;
     margin-top: 10px;
 }
 
-.points-number {
-    font-size: 60px;
-    font-weight: bold;
-    color: #18405c;
+.btn-limpiar:hover {
+    background-color: #5a6268;
 }
 
-.qr-placeholder {
-    margin-top: 15px;
-    background: #f9f9f9;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    color: #bbb;
+/* Estilo para el input de fecha específico */
+input[type="date"] {
+    font-family: Arial, sans-serif;
+    color: #495057;
 }
-
-.hidden { display: none !important; }
-
-footer { margin-top: 20px; }
-.btn-ghost { background: none; border: none; color: #ccc; font-size: 11px; cursor: pointer; }

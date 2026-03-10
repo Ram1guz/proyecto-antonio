@@ -7,10 +7,10 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ramiro # Tu usuario de ayer
-      POSTGRES_PASSWORD: tu_password_seguro
+      POSTGRES_PASSWORD: 5262
       POSTGRES_DB: jacaqu_rewards # Tu DB de ayer
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # ESTA LÍNEA ES CLAVE: Carga tu tabla 'clientes' al iniciar
@@ -24,7 +24,7 @@ services:
       - "3000:3000"
     environment:
       DB_USER: ramiro
-      DB_PASSWORD: tu_password_seguro
+      DB_PASSWORD: 5262
       DB_HOST: db
       DB_NAME: jacaqu_rewards
       PORT: 3000
