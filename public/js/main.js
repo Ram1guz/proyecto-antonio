@@ -1,18 +1,21 @@
+// ==========================================
+// VARIABLES GLOBALES
+// ==========================================
 let clienteActual = null;
 
 // ==========================================
-// 1. REGISTRAR (Ahora guarda en la DB Real)
+// 1. REGISTRAR (Guarda en la DB Real)
 // ==========================================
 document.getElementById('form-registro').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const datos = {
-    nombre: document.getElementById('nombre').value.trim(),
-    apellido: document.getElementById('apellido').value.trim(),
-    celular: document.getElementById('celular').value.trim(),
-    correo: document.getElementById('correo').value.trim(),
-    fecha_nacimiento: document.getElementById('fecha_nacimiento').value // <-- Nuevo!
-};
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        celular: document.getElementById('celular').value.trim(),
+        correo: document.getElementById('correo').value.trim(),
+        fecha_nacimiento: document.getElementById('fecha_nacimiento').value
+    };
 
     try {
         const respuesta = await fetch('/registro', {
@@ -23,21 +26,21 @@ document.getElementById('form-registro').addEventListener('submit', async functi
 
         if (respuesta.ok) {
             const clienteGuardado = await respuesta.json();
-            alert(`✅ ¡${clienteGuardado.nombre} registrado en la base de datos!`);
+            alert(`✅ ¡${clienteGuardado.nombre} registrado con éxito!`);
             seleccionarCliente(clienteGuardado);
         } else {
-            alert("❌ Error al registrar. Quizás el correo ya existe.");
+            // Mensaje inteligente: si no es OK, es que el CONSTRAINT que pusimos en DBeaver saltó
+            alert("⚠️ El cliente ya existe o los datos coinciden con un registro actual.");
         }
     } catch (err) {
         console.error("Error de conexión:", err);
-        alert("🔌 No se pudo conectar con el servidor.");
+        alert("🔌 Error de conexión con el servidor.");
     }
 });
 
 // ==========================================
-// 2. BUSCAR (Busca en PostgreSQL)
+// 2. BUSCAR (En PostgreSQL)
 // ==========================================
-// Vinculamos el botón de buscar manualmente ya que quitamos el onclick del HTML
 document.getElementById('btn-buscar').addEventListener('click', async () => {
     const nombre = document.getElementById('nombre').value.trim();
     const apellido = document.getElementById('apellido').value.trim();
@@ -47,21 +50,27 @@ document.getElementById('btn-buscar').addEventListener('click', async () => {
         return;
     }
 
+    console.log(`🔎 Buscando a: ${nombre} ${apellido}...`);
+
     try {
         const respuesta = await fetch(`/buscar?nombre=${nombre}&apellido=${apellido}`);
+        
         if (respuesta.ok) {
             const cliente = await respuesta.json();
+            console.log("📦 Datos brutos recibidos del servidor:", cliente);
             seleccionarCliente(cliente);
         } else {
-            mostrarError("❌ Cliente no encontrado en Jacaqu Café.");
+            console.warn("⚠️ Servidor respondió con error (Posible 404)");
+            mostrarError("❌ Cliente no encontrado.");
         }
     } catch (err) {
-        mostrarError("🔌 Error de conexión al buscar.");
+        console.error("🚨 Error crítico en la búsqueda:", err);
+        mostrarError("🔌 Error de red.");
     }
 });
 
 // ==========================================
-// 3. SUMAR PUNTO (Actualiza la DB)
+// 3. SUMAR PUNTOS
 // ==========================================
 document.getElementById('btn-add-point').addEventListener('click', async () => {
     if (!clienteActual) return;
@@ -78,7 +87,6 @@ document.getElementById('btn-add-point').addEventListener('click', async () => {
             clienteActual.puntos = datosActualizados.puntos;
             document.getElementById('current-points').innerText = clienteActual.puntos;
             
-            // Feedback visual
             const display = document.getElementById('display-nombre-cliente');
             display.innerText = `¡Punto añadido! Total: ${clienteActual.puntos}`;
             setTimeout(() => {
@@ -91,35 +99,64 @@ document.getElementById('btn-add-point').addEventListener('click', async () => {
 });
 
 // ==========================================
-// 4. FUNCIONES DE INTERFAZ (Se mantienen igual)
+// 4. FUNCIONES DE INTERFAZ
 // ==========================================
 function seleccionarCliente(cliente) {
+    console.log("✅ Datos que llegaron al JS:", cliente);
     clienteActual = cliente;
-    document.getElementById('display-nombre-cliente').innerText = `Cliente: ${cliente.nombre} ${cliente.apellido}`;
-    document.getElementById('display-nombre-cliente').style.color = "#18405c";
-    document.getElementById('current-points').innerText = cliente.puntos;
-    document.getElementById('btn-add-point').style.display = 'block';
-    generarQR(cliente.id.toString(), `${cliente.nombre} ${cliente.apellido}`);
-}
-
-function generarQR(id, nombre) {
-    const contenedorQR = document.getElementById('qrcode');
-    contenedorQR.innerHTML = ""; 
-    const qrDiv = document.createElement("div");
-    contenedorQR.appendChild(qrDiv);
     
-    new QRCode(qrDiv, {
-        text: id, // El QR ahora contiene el ID real de la base de datos
-        width: 150,
-        height: 150,
-        colorDark : "#18405c"
-    });
-}
+    // 1. Nombre y Apellido (Este sí te funcionaba)
+    const nombreElemento = document.getElementById('display-nombre-cliente');
+    if (nombreElemento) {
+        nombreElemento.innerText = `Cliente: ${cliente.nombre} ${cliente.apellido}`;
+    }
 
+    // 2. Celular
+    const celElemento = document.getElementById('display-celular');
+    if (celElemento) {
+        // Probamos con 'celular' y 'cel' por si acaso
+        celElemento.innerText = `📱 Celular: ${cliente.celular || cliente.cel || '---'}`;
+    }
+
+    // 3. Correo
+    const correoElemento = document.getElementById('display-correo');
+    if (correoElemento) {
+        // Probamos con 'correo' y 'email'
+        correoElemento.innerText = `📧 Correo: ${cliente.correo || cliente.email || '---'}`;
+    }
+    
+    // 4. Fecha de Nacimiento
+    const fechaElemento = document.getElementById('display-fecha');
+    if (fechaElemento) {
+        // Usamos el nombre exacto que confirmaste en DBeaver
+        const valorFecha = cliente.fecha_nacimiento;
+        if (valorFecha) {
+            const fechaObj = new Date(valorFecha);
+            const fechaFormateada = fechaObj.toLocaleDateString('es-ES', { timeZone: 'UTC' });
+            fechaElemento.innerText = `🎂 Cumpleaños: ${fechaFormateada}`;
+        } else {
+            fechaElemento.innerText = `🎂 Cumpleaños: ---`;
+        }
+    }
+
+    // 5. Puntos y QR
+    document.getElementById('current-points').innerText = cliente.puntos || 0;
+    document.getElementById('btn-add-point').style.display = 'block';
+    
+    if (cliente.id) {
+        generarQR(cliente.id.toString());
+    }
+}
 document.getElementById('btn-limpiar').addEventListener('click', () => {
     clienteActual = null;
     document.getElementById('form-registro').reset();
-    document.getElementById('display-nombre-cliente').innerText = "Esperando cliente...";
+    document.getElementById('display-nombre-cliente').innerText = "Esperando selección...";
+    document.getElementById('display-nombre-cliente').style.color = "#18405c";
+    
+    document.getElementById('display-celular').innerText = "";
+    document.getElementById('display-correo').innerText = "";
+    document.getElementById('display-fecha').innerText = "";
+
     document.getElementById('current-points').innerText = "0";
     document.getElementById('btn-add-point').style.display = 'none';
     document.getElementById('qrcode').innerHTML = "";
@@ -130,6 +167,12 @@ function mostrarError(mensaje) {
     const display = document.getElementById('display-nombre-cliente');
     display.innerText = mensaje;
     display.style.color = "red";
+    
+    // Limpiar restos de búsquedas anteriores
+    document.getElementById('display-celular').innerText = "";
+    document.getElementById('display-correo').innerText = "";
+    document.getElementById('display-fecha').innerText = "";
     document.getElementById('current-points').innerText = "0";
     document.getElementById('btn-add-point').style.display = 'none';
+    document.getElementById('qrcode').innerHTML = "";
 }

@@ -74,22 +74,25 @@ app.post('/registro', async (req, res) => {
 // API: Buscar Cliente (Coincide con main.js)
 // ==========================================
 app.get('/buscar', async (req, res) => {
+    // Extraemos los datos que vienen de la URL
     const { nombre, apellido } = req.query;
-    try {
-        const query = `
-            SELECT * FROM clientes 
-            WHERE LOWER(nombre) = LOWER($1) AND LOWER(apellido) = LOWER($2)
-            LIMIT 1
-        `;
-        const resultado = await pool.query(query, [nombre, apellido]);
 
-        if (resultado.rows.length > 0) {
-            res.json(resultado.rows[0]);
+    try {
+        // 1. La consulta SQL con el SELECT * para traer TODO
+        const query = 'SELECT * FROM clientes WHERE nombre = $1 AND apellido = $2';
+        const result = await pool.query(query, [nombre, apellido]);
+
+        // 2. Verificamos si encontramos a alguien
+        if (result.rows.length > 0) {
+            console.log("✅ Cliente encontrado:", result.rows[0]);
+            res.json(result.rows[0]); // Enviamos toda la fila al frontend
         } else {
-            res.status(404).json({ message: "Cliente no encontrado" });
+            console.log("❓ Cliente no existe en la DB");
+            res.status(404).json({ error: 'Cliente no encontrado' });
         }
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("🚨 Error en la consulta SQL:", err);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 

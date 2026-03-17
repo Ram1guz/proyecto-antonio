@@ -18,6 +18,9 @@
         .btn-registrar { background-color: #18405c; color: white; }
         .btn-buscar { background-color: #2c6e91; color: white; }
         .btn-limpiar { background-color: #666; color: white; margin-top: 10px; }
+        
+        /* Estilo para los nuevos datos del barista */
+        .detalle-barista { color: #555; font-size: 0.9rem; margin: 2px 0; }
     </style>
 </head>
 <body>
@@ -32,34 +35,39 @@
         <section id="view-register" class="card">
             <h2>Gestión de Cliente</h2>
             <form id="form-registro">
-    <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
-    <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
-    <input type="tel" id="celular" name="celular" placeholder="Celular (Obligatorio)" required>
-    <input type="email" id="correo" name="correo" placeholder="Correo Electrónico (Obligatorio)" required>
-    
-    <div style="text-align: left; margin: 10px 0;">
-        <label style="color: #18405c; font-weight: bold; font-size: 0.9rem;">Fecha de Nacimiento:</label>
-        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
-    </div>
+                <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+                <input type="text" id="apellido" name="apellido" placeholder="Apellido" required>
+                <input type="tel" id="celular" name="celular" placeholder="Celular (Obligatorio)" required>
+                <input type="email" id="correo" name="correo" placeholder="Correo Electrónico (Obligatorio)" required>
+                
+                <div style="text-align: left; margin: 10px 0;">
+                    <label style="color: #18405c; font-weight: bold; font-size: 0.9rem;">Fecha de Nacimiento:</label>
+                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                </div>
 
-    <div class="button-row">
-        <button type="submit" class="btn-registrar">🆕 Registrar</button>
-        <button type="button" class="btn-buscar" id="btn-buscar">🔍 Buscar por Nombre</button>
-    </div>
-    
-    <button type="button" class="btn-limpiar" id="btn-limpiar">✔️ Siguiente Cliente / Limpiar</button>
-</form>
+                <div class="button-row">
+                    <button type="submit" class="btn-registrar">🆕 Registrar</button>
+                    <button type="button" class="btn-buscar" id="btn-buscar">🔍 Buscar por Nombre</button>
+                </div>
+                
+                <button type="button" class="btn-limpiar" id="btn-limpiar">✔️ Siguiente Cliente / Limpiar</button>
+            </form>
         </section>
 
         <section id="view-client" class="card points-section">
             <h3>Estado del Cliente</h3>
             <div id="display-nombre-cliente" class="cliente-info-display">Esperando selección...</div>
             
+            <div id="info-contacto-cliente" style="margin: 10px 0;">
+                <p id="display-celular" class="detalle-barista"></p>
+                <p id="display-correo" class="detalle-barista"></p>
+                <p id="display-fecha" class="detalle-barista"></p>
+            </div>
             <div class="points-number" id="current-points" style="font-size: 3rem; color: #18405c;">0</div>
             <p id="mensaje-puntos">Puntos acumulados</p>
             
             <div id="qrcode" style="margin: 20px auto; display: flex; justify-content: center; min-height: 128px;">
-                </div>
+            </div>
 
             <button type="button" id="btn-add-point" class="btn-registrar" style="display:none;">
                 + Sumar Café (Punto)

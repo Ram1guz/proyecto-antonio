@@ -1,35 +1,30 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
-    container_name: cafe_rewards_db # <-- Identificación clara
+    container_name: cafe_rewards_db
     restart: always
     environment:
-      POSTGRES_USER: ramiro # Tu usuario de ayer
+      POSTGRES_USER: ramiro
       POSTGRES_PASSWORD: 5262
-      POSTGRES_DB: jacaqu_rewards # Tu DB de ayer
+      POSTGRES_DB: jacaqu_rewards
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # ESTA LÍNEA ES CLAVE: Carga tu tabla 'clientes' al iniciar
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:
     build: .
     container_name: cafe_rewards_app
-    restart: always
     ports:
       - "3000:3000"
-    environment:
-      DB_USER: ramiro
-      DB_PASSWORD: 5262
-      DB_HOST: db
-      DB_NAME: jacaqu_rewards
-      PORT: 3000
     depends_on:
       - db
+    environment:
+      DATABASE_URL: postgres://ramiro:5262@db:5432/jacaqu_rewards
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
 volumes:
   postgres_data:
